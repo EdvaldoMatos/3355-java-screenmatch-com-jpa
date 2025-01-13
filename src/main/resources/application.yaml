@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    url: jdbc:postgresql://localhost/alura_series
+    password: 'lilian31'
+hibernate:
+  dialect: org.hibernate.dialect.HSQLDialect
