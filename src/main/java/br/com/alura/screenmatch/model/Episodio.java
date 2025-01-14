@@ -15,6 +15,8 @@ public class Episodio {
     private Double avaliacao;
     private LocalDate dataLancamento;
 
+    private Serie serie;
+
     public Episodio(Integer numeroTemporada, DadosEpisodio dadosEpisodio) {
         this.temporada = numeroTemporada;
         this.titulo = dadosEpisodio.titulo();
