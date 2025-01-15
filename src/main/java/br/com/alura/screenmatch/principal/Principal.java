@@ -27,6 +27,7 @@ public class Principal {
     private static final String ENDERECO = "https://www.omdbapi.com/?t=";
     private static final String API_KEY = "&apikey=6585022c";
     private List<Serie> series = new ArrayList<>();
+    private Optional<Serie> serieBusca;
 
 
     public Principal(SerieRepository serieRepository) {
@@ -45,6 +46,10 @@ public class Principal {
                     5 - Buscar Séries por Ator
                     6 - Top 5 Séries
                     7 - Buscar Séries por Gênero
+                    8 - Buscar Séries por Temporada e Avaliação
+                    9 - Buscar Episódio por trecho
+                    10 - Top 5 Episódios por Série
+                    11 - Buscar Episódio por data de lançamento
                     
                     0 - Sair                                 
                     """;
@@ -76,6 +81,18 @@ public class Principal {
                 case 7:
                     buscarPorGenero();
                     break;
+                case 8:
+                    buscarSeriePorTemporadaEAvaliacao();
+                    break;
+                case 9:
+                    buscarEpisodioPorTrecho();
+                    break;
+                case 10:
+                    topEpisodiosPorSerie();
+                    break;
+                case 11:
+                    buscarEpisodioDepoisDeUmaData();
+                    break;
                 case 0:
                     System.out.println("Saindo...");
                     break;
@@ -83,6 +100,47 @@ public class Principal {
                     System.out.println("Opção inválida");
             }
         }
+    }
+
+    private void buscarEpisodioDepoisDeUmaData() {
+        buscarSeriePorTitulo();
+        serieBusca.ifPresent(s -> {
+            System.out.println("Digite a data para busca");
+            var anoLancamento = leitura.nextInt();
+            leitura.nextLine();
+            List<Episodio> episodios = serieRepository.episodiosPorSerieEAno(s, anoLancamento);
+
+            episodios.forEach(e -> System.out.printf("Serie: %s - temporada: %s - Titulo do episodio: %s - Avaliacao: %s - Ano: %s%n",
+                    e.getSerie().getTitulo(), e.getTemporada(), e.getTitulo(), e.getAvaliacao(), e.getDataLancamento()));
+        });
+    }
+
+    private void topEpisodiosPorSerie() {
+        buscarSeriePorTitulo();
+        serieBusca.ifPresent(s -> {
+            List<Episodio> topEpisodios = serieRepository.topEpisodiosPorSerie(s);
+            topEpisodios.forEach(e -> System.out.printf("Serie: %s - temporada: %s - Titulo do episodio: %s - Avaliacao: %s%n",
+                    e.getSerie().getTitulo(), e.getTemporada(), e.getTitulo(), e.getAvaliacao()));
+        });
+
+    }
+
+    private void buscarEpisodioPorTrecho() {
+        System.out.println("Digite o trecho do episodio para busca");
+        var trecho = leitura.nextLine();
+        var episodios = serieRepository.episodiosPorTecho(trecho);
+        episodios.forEach(e -> System.out.printf("Serie: %s - temporada: %s - Titulo do episodio: %s%n",
+                e.getSerie().getTitulo(), e.getTemporada(), e.getTitulo()));
+    }
+
+    private void buscarSeriePorTemporadaEAvaliacao() {
+        System.out.println("Digite a temporada para busca");
+        var temporada = leitura.nextInt();
+        System.out.println("Digite a avaliação mínima");
+        var avaliacao = leitura.nextDouble();
+        var series = serieRepository.seriesPorTemporadaEAvaliacao(temporada, avaliacao);
+        System.out.println("Séries encontradas com a temporada: " + temporada + " e avaliação maior ou igual a " + avaliacao);
+        series.forEach(s -> System.out.printf(" %s - avaliacao: %s%n", s.getTitulo(), s.getAvaliacao()));
     }
 
     private void buscarPorGenero() {
@@ -115,7 +173,10 @@ public class Principal {
         System.out.println("Digite o nome da série para busca");
         var nomeSerie = leitura.nextLine();
         var serie = serieRepository.findByTituloContainingIgnoreCase(nomeSerie);
-        serie.ifPresentOrElse(System.out::println, () -> System.out.println("Série não encontrada"));
+        serie.ifPresentOrElse(s -> {
+            System.out.println(s);
+            this.serieBusca = serie;
+        }, () -> System.out.println("Série não encontrada"));
     }
 
     private void listarSeriesBuscadas() {
